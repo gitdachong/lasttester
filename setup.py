@@ -14,6 +14,7 @@ if sys.argv[-1] == 'publish':
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
 setup(
     name = "lasttester",
     version = __version__,
@@ -31,12 +32,9 @@ setup(
     author = __author__,
     author_email = __contact__,
 
-    packages = find_packages(where='lasttester',include=('*',)),
-    package_data={'': ['LICENSE'], 'requests': ['*.mo','*.po']},
+    packages = find_packages(),
+    package_data={'': ['LICENSE'], 'lasttester': ['*.mo','*.po']},
     include_package_data=True,
-    package_dir={
-        '': 'lasttester',
-    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

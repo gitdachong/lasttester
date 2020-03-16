@@ -1,5 +1,5 @@
 
-__version__ = '1.0.0'
+__version__ = '1.0.2'
 __author__ = 'gitdachong'
 __maintainer__ = 'gitdachong'
 __contact__ = '88350676@qq.com'
