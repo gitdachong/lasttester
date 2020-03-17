@@ -1,5 +1,5 @@
 #coding:utf-8
-from lasttester.lib.db import DbClass
+from lasttester.contrib.db import DbClass
 
 class Configurer(object):
 

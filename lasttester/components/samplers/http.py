@@ -1,7 +1,6 @@
 #coding:utf-8
 from . import base
 from ...utils import parser
-from lasttester.utils.formater import formater_from_requests_response
 import requests
 ALLOWED_METHOD = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
@@ -18,7 +17,6 @@ class Sampler(base.Sampler):
 
     def run(self):
         req = self.test_content.pop('request',{})
-
         method = req.pop('method', 'GET')
         if method.upper() not in ALLOWED_METHOD:
             raise Exception('Http(s)Sampler do not allow {} method'.format(method))
@@ -26,16 +24,26 @@ class Sampler(base.Sampler):
         url = req.pop('url')
         common_http_request = self.test_content.get('common_http_request',{})
         parsed_url = parser.parser_http_url_complete(common_http_request.get('base_url'), url)
-        self.request_parsed = req
-        self.request = parser.object_to_string(req.get('data'))
+        self.request['text'] = parser.object_to_string(req.get('data'))
+        self.request.update(req)
         resp = self.session.request(
             method,
             parsed_url,
             **req
         )
+        self.response =self.__parsed_response(resp)
+        return self.response
 
-        self.response_parsed = formater_from_requests_response(resp)
-        self.response =self.response_parsed.get('response')
-        self.status_code = self.response_parsed.get('status_code')
-        return self.response_parsed
+    def __parsed_response(self,resp):
+        _response = {}
+        _response['text'] = resp.text
+        _response['headers'] = dict(resp.headers)
+        _response['cookies'] = requests.utils.dict_from_cookiejar(resp.cookies)
+        _response['status_code'] = resp.status_code
+        if resp.headers.get('Content-Type') == "application/json":
+            _response['json'] = resp.json()
+        return _response
+
+
+
 

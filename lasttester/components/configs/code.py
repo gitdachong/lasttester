@@ -1,5 +1,5 @@
 #coding:utf-8
-from lasttester.lib.build_code import BuildCode
+from lasttester.contrib.build_code import BuildCode
 class Configurer(object):
 
     def __init__(self,config):

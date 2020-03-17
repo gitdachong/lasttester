@@ -14,21 +14,22 @@ class Sampler(base.Sampler):
 
 
     def run(self):
-        self.request_parsed = self.test_content.get('request')
-        if not isinstance(self.request_parsed,dict):
+        self.request = self.test_content.get('request')
+        if not isinstance(self.request,dict):
             return
         import redis
         self.__redis = redis.Redis(connection_pool=self.__instance)
         self.__redis.set('b',2)
-        self.request = str(self.request_parsed)
-        _method = getattr(self.__redis,self.request_parsed.get('method'))
-        args = self.request_parsed.get('args',[])
-        kwargs = self.request_parsed.get('kwargs',{})
+        self.request['text'] = str(self.request)
+        _method = getattr(self.__redis,self.request.get('method'))
+        args = self.request.get('args',[])
+        kwargs = self.request.get('kwargs',{})
+
         if _method:
-            self.response_parsed = _method(*args,**kwargs)
-        self.response =str(self.response_parsed)
-        self.status_code = 200
-        return self.response_parsed
+            self.response['text'] = _method(*args,**kwargs)
+            self.response['json'] = str(self.response['text'])
+        self.response['status_code'] = 200
+        return self.response
 
     def __del__(self):
         try:

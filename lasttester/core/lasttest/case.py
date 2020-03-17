@@ -11,7 +11,21 @@ class TestCase(object):
         self._name = ''
         self._sampler = None
         self._request_type = ''
-        self._result = formater.STANDARD_TEST_RESULT_FORMAT()
+        self._result = {
+            "name":"",
+            "type": "",
+            "sampler":"",
+            "result": False,
+            "status_code": 0,
+            "start_time": 0,
+            "end_time": 0,
+            "request": '',
+            "response": "",
+            "extractors": [],
+            "asserters": [],
+            "pre_processors": [],
+            "post_processors": []
+        }
         self._asserters = []
         self._extractors = []
 
@@ -23,11 +37,9 @@ class TestCase(object):
         if self._sampler:
             self._result.update({
                 'sampler':self._sampler.sampler_name,
-                'status_code':self._sampler.status_code,
+                'status_code':self._sampler.response['status_code'],
                 'request':self._sampler.request,
-                'request_parsed':self._sampler.request_parsed,
                 'response':self._sampler.response,
-                'response_parsed':self._sampler.response_parsed,
             })
         else:
             self._result['status_code'] = 0

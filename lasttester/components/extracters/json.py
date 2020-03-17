@@ -5,8 +5,11 @@ from ...utils.parser import parser_string_to_dict
 class Extracter(base.Extracter):
     def __init__(self, extract_content,extract_config):
         super().__init__(extract_content,extract_config)
-        self.parsed_content = self.extract_content.get('content_json') if self.extract_content.get('content_json') else parser_string_to_dict(self.extract_content)
-
+        if self.target_filed in ['text', 'json']:
+            self.search_content = self.extract_content.get('json') if self.extract_content.get(
+                'json') else parser_string_to_dict(self.search_content)
+        else:
+            self.search_content = parser_string_to_dict(self.search_content)
 
     def extract(self):
         extract_rule = self.extract_config.get('rules','')
@@ -18,7 +21,7 @@ class Extracter(base.Extracter):
         return self.extract_results
 
     def extract_value(self,rule):
-        extract_content = self.parsed_content
+        extract_content = self.search_content
         if not rule:
             return ''
         try:

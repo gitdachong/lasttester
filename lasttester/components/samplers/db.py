@@ -1,7 +1,5 @@
 #coding:utf-8
 from . import base
-from ...utils import parser
-from lasttester.utils.formater import formater_from_requests_response
 
 class Sampler(base.Sampler):
 
@@ -20,13 +18,13 @@ class Sampler(base.Sampler):
         if not isinstance(self.request,str):
             return
         self.request = self.request.lower().strip()
-        self.request_parsed = self.request
         if self.request.startswith('select'):
             resp = self.__instance.executeSql(self.request)
         else:
             resp = self.__instance.executeCommit(self.request)
-        self.response_parsed = resp
-        self.response =str(self.response_parsed)
-        self.status_code = 200
-        return self.request_parsed
+
+        self.response['text'] = resp
+        self.response['json'] = str(resp)
+        self.response['status_code'] = 200
+        return self.response
 
