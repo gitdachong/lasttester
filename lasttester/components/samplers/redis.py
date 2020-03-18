@@ -5,12 +5,8 @@ class Sampler(base.Sampler):
 
 
     def __init__(self,test_content,**kwargs):
-        super().__init__(test_content)
+        super().__init__(test_content,**kwargs)
         self.sampler_name = 'redis'
-        if 'instance' in kwargs:
-            self.__instance = kwargs.get('instance')
-        if not self.__instance:
-            raise Exception(r"redis instance {} doesn't exists".format(self.test_content.get('instance')))
 
 
     def run(self):
@@ -18,7 +14,7 @@ class Sampler(base.Sampler):
         if not isinstance(self.request,dict):
             return
         import redis
-        self.__redis = redis.Redis(connection_pool=self.__instance)
+        self.__redis = redis.Redis(connection_pool=self.instance)
         self.__redis.set('b',2)
         self.request['text'] = str(self.request)
         _method = getattr(self.__redis,self.request.get('method'))

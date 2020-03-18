@@ -3,7 +3,7 @@ import types
 from . import factory, built_in
 import re
 from urllib.parse import quote
-
+from . import constants
 import requests
 DELAY_VARIABLE_PATTERN = re.compile(r"\$\{(\w+)\}")
 DELAY_FUNCTION_PATTERN = re.compile(r"\$\{(\w+)\(([\s\S]*)\)\}")
@@ -36,7 +36,7 @@ class Context(object):
 
 
     def __del__(self):
-        for _configurer in self.__global_objects.get('configurers'):
+        for _key,_configurer in self.__global_objects.get(constants.KEY_CONFIGURER_INSTANCES).items():
             _configurer.close()
 
     def __register(self,_key,values):
@@ -55,7 +55,6 @@ class Context(object):
             return
         for _config in configs:
             _configurer = factory.load_configurer(_config.get('type','base'),_config)
-            self.__register('configurers', [_configurer])
             parse_results = _configurer.parse()
             for _config_key, _config_values in parse_results:
                 self.__register(_config_key, _config_values)

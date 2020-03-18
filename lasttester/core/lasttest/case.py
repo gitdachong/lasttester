@@ -1,8 +1,7 @@
 #coding:utf-8
 import time
-from .. import factory
+from .. import factory,constants
 from ...utils import formater,capturer,util
-
 class TestCase(object):
 
     def __init__(self,context,test_data):
@@ -49,7 +48,7 @@ class TestCase(object):
     def __load_extra_datas(self,sampler_type,instance_name):
         extra_data = self._context.get_objects(sampler_type)
         if instance_name:
-            extra_data['instance'] = self._context.get_objects('instances').get(instance_name)
+            extra_data['instance'] = self._context.get_objects(constants.KEY_CONFIGURER_INSTANCES).get(instance_name)
         return extra_data
 
 

@@ -1,5 +1,5 @@
 from lasttester.components.configs.ftp import Configurer
-
+import os
 
 config = Configurer({
     'name':'ftp',
@@ -14,5 +14,7 @@ config = Configurer({
 key,value  = config.parse()[0]
 ftp = value.get('ftp')
 print(ftp)
-config.upload('/2/tg_image_1338043360.jpeg','/Users/scott/Downloads/tg_image_1338043360.jpeg')
+# config.upload('/5/','/Users/scott/Downloads/test/1')
+config.download('/5/','/Users/scott/Downloads/test/111/')
+# config.delete('/')
 config.close()
