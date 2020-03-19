@@ -10,15 +10,18 @@ class Configurer(base.Configurer):
         self._key = constants.KEY_CONFIGURER_INSTANCES
         self._results = {}
         self.instance = ftplib.FTP()
+        self.instance.set_debuglevel(0)
         self.lines = []
         self._ftp_log = []
 
     def connect(self,_config):
         self._ftp_log.append(self.instance.connect(_config.get('host'),int(_config.get('port',21))))
         _pasv_mode =True if _config.get('mode') ==1 else False
-        self._ftp_log.append(self.instance.set_pasv(_pasv_mode))
+        self.instance.set_pasv(_pasv_mode)
         self._ftp_log.append(self.instance.login(_config.get('username'),_config.get('password')))
-        self.__current_dir = r'/'
+        if 'defaut_path' in _config:
+            self.opendir(_config.get('defaut_path'))
+        self.__current_dir = self.instance.pwd()
 
     def parse(self):
         _config = self._config.get('config_body')
@@ -28,9 +31,10 @@ class Configurer(base.Configurer):
 
     def close(self):
         if self.instance:
-            self.instance.close()
+            self.instance.quit()
 
     def upload(self,remotepath, localpath):
+        self._ftp_log = []
         if os.path.isdir(localpath):
             _files = os.listdir(localpath)
             for _file in _files:
@@ -49,12 +53,15 @@ class Configurer(base.Configurer):
         self.opendir(dirname)
         fp = open(localpath, 'rb')
         _result = self.instance.storbinary('STOR ' + basename, fp, bufsize)
-        self.instance.set_debuglevel(0)
+        print('__upload_file_1',type(_result),_result)
         fp.close()
 
     def download(self,remotepath, localpath):
+        self._ftp_log = []
         try:
-            self.instance.cwd(remotepath)
+            _result = self.instance.cwd(remotepath)
+            print('download',type(_result), _result)
+
             self.__download_dir(remotepath,localpath)
         except ftplib.error_perm:
             self.__download_file(remotepath, localpath)
@@ -64,8 +71,9 @@ class Configurer(base.Configurer):
         dirname, basename = self.__split(remotepath)
         self.opendir(dirname)
         fp = open(localpath, 'wb')
-        self.instance.retrbinary('RETR ' + basename, fp.write, bufsize)
-        self.instance.set_debuglevel(0)
+        _result = self.instance.retrbinary('RETR ' + basename, fp.write, bufsize)
+        print('__download_file_1', type(_result), _result)
+
         fp.close()
 
     def __download_dir(self,remotepath, localpath):
@@ -73,7 +81,8 @@ class Configurer(base.Configurer):
             os.makedirs(localpath)
         self.__clear_lines()
         self.opendir(remotepath)
-        self.instance.retrlines("LIST", callback=self.__save_line)
+        _result = self.instance.retrlines("LIST", callback=self.__save_line)
+        print('__download_dir_1', type(_result), _result)
         for line in self.lines:
             name = line.split(" ")[-1]
             if name in ['.','..']:
@@ -87,11 +96,13 @@ class Configurer(base.Configurer):
 
 
     def delete(self,remotepath):
+        self._ftp_log = []
         try:
             self.instance.cwd(remotepath)
             self.delete_dir(remotepath)
         except ftplib.error_perm:
-            self.instance.delete(remotepath)
+            _result = self.instance.delete(remotepath)
+            print('__delete_1', type(_result), _result)
 
     def delete_dir(self,remotepath):
         self.__clear_lines()
@@ -105,22 +116,31 @@ class Configurer(base.Configurer):
             if line[0] == "d":
                 self.delete_dir(_path)
             else:
-                self.instance.delete(_path)
+                _result = self.instance.delete(_path)
+                print('delete_dir1', type(_result), _result)
         if remotepath !='/':
-            self.instance.rmd(remotepath)
+            _result = self.instance.rmd(remotepath)
+            print('delete_dir_2', type(_result), _result)
 
     def opendir(self,remotepath):
+        print(remotepath,self.__current_dir)
         if not remotepath or remotepath == self.__current_dir:
             return True
 
         dir_lists = remotepath.split(r'/')
+        if not dir_lists[0]:
+            dir_lists.pop(0)
         dir_lists.insert(0,r'/')
         for _dir in dir_lists:
             try:
-                self.instance.cwd(_dir)
+                _result = self.instance.cwd(_dir)
+                self._ftp_log.append()
+                print('opendir_11', type(_result), _result)
             except ftplib.error_perm:
                 try:
-                    self.instance.mkd(_dir)
+                    _result = self.instance.mkd(_dir)
+                    self._ftp_log.append('mkdir dir ')
+                    print('opendir_1', type(_result), _result)
                 except ftplib.error_perm:
                     pass
                 self.instance.cwd(_dir)

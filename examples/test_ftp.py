@@ -15,6 +15,7 @@ key,value  = config.parse()[0]
 ftp = value.get('ftp')
 print(ftp)
 # config.upload('/5/','/Users/scott/Downloads/test/1')
-config.download('/5/','/Users/scott/Downloads/test/111/')
+config.upload('/6/','E:\pornhub-downloader-master\img')
+# config.download('/5/','/Users/scott/Downloads/test/111/')
 # config.delete('/')
 config.close()
