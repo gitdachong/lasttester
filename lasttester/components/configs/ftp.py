@@ -37,13 +37,18 @@ class Configurer(base.Configurer):
         self._ftp_log = []
         if os.path.isdir(localpath):
             _files = os.listdir(localpath)
+            _dirs = []
             for _file in _files:
                 _path = os.path.join(localpath,_file)
                 _remotepath = '{}/{}'.format(remotepath.rstrip('/'),_file)
                 if os.path.isdir(_path):
-                    self.upload(_remotepath,_path)
+                    _dirs.append((_remotepath,_path))
                 else:
                     self.__upload_file(_remotepath,_path)
+
+            #解决目录顺序混乱导致多次重复打开子目录和父目录因此的效率问题
+            for _remotepath,_path in _dirs:
+                self.upload(_remotepath, _path)
         else:
             self.__upload_file(remotepath, localpath)
 
@@ -123,27 +128,27 @@ class Configurer(base.Configurer):
             print('delete_dir_2', type(_result), _result)
 
     def opendir(self,remotepath):
-        print(remotepath,self.__current_dir)
-        if not remotepath or remotepath == self.__current_dir:
+        remotepath = remotepath.rstrip(r'/')
+        if not remotepath or self.__compare_path(remotepath,self.__current_dir):
             return True
-
-        dir_lists = remotepath.split(r'/')
-        if not dir_lists[0]:
-            dir_lists.pop(0)
-        dir_lists.insert(0,r'/')
-        for _dir in dir_lists:
-            try:
-                _result = self.instance.cwd(_dir)
-                self._ftp_log.append()
-                print('opendir_11', type(_result), _result)
-            except ftplib.error_perm:
+        if self.__current_dir.find(remotepath) ==0:
+            self.instance.cwd(remotepath)
+        else:
+            _diff = remotepath.lstrip(self.__current_dir)
+            _common = remotepath.rstrip(_diff)
+            if _common and not self.__compare_path(_common,self.__current_dir):
+                self._ftp_log.append(self.instance.cwd(_common))
+            dir_lists = _diff.split(r'/')
+            for _dir in dir_lists:
                 try:
-                    _result = self.instance.mkd(_dir)
-                    self._ftp_log.append('mkdir dir ')
-                    print('opendir_1', type(_result), _result)
+                    self._ftp_log.append(self.instance.cwd(_dir))
                 except ftplib.error_perm:
-                    pass
-                self.instance.cwd(_dir)
+                    try:
+                        _result = self.instance.mkd(_dir)
+                        self._ftp_log.append('mkdir dir {} successful'.format(_result))
+                    except ftplib.error_perm:
+                        pass
+                    self.instance.cwd(_dir)
         self.__current_dir = self.instance.pwd()
         return True
 
@@ -161,4 +166,17 @@ class Configurer(base.Configurer):
             return '',path
         return path[:index],path[index + 1:]
 
+    def __common_path(self,remotepath,oldpath):
+        if len(remotepath) < oldpath:
+            remotepath,oldpath = oldpath,remotepath
+
+        for _idnex,_char in enumerate(remotepath):
+            if _char != oldpath[_idnex]:
+                break
+        return remotepath[:_idnex].rstrip(r'/')
+
+
+
+    def __compare_path(self,path,t_path):
+        return path.rstrip(r'/') == t_path.rstrip(r'/')
 

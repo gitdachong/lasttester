@@ -1,12 +1,15 @@
 #coding:utf-8
-
 class Cache():
 
-    def __init__(self,type='file',**kwargs):
+    def __init__(self,type='shelve',**kwargs):
         self.cacheInstance = None
-        if type =='file':
-            from .lib.FileCache import FileCache
-            self.cacheInstance = FileCache(kwargs.get('file'))
+        if type =='dbm':
+            from .base.cache_dbm import CacheDbm
+            self.cacheInstance = CacheDbm(kwargs.get('file'))
+        elif type =='shelve':
+            from .base.cache_shelve import CacheShelve
+            self.cacheInstance = CacheShelve(kwargs.get('file'))
+
 
     def set(self,key,value):
         return self.cacheInstance.set(key,value)
