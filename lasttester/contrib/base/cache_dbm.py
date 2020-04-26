@@ -25,8 +25,8 @@ class CacheDbm():
             del self._db[key]
         return True
 
-    def get(self, key):
-        value = self._db.get(key)
+    def get(self, key,default):
+        value = self._db.get(key,default)
         return None if not value else value.decode()
 
     def __del__(self):

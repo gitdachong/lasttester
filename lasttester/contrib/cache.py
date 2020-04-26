@@ -14,8 +14,8 @@ class Cache():
     def set(self,key,value):
         return self.cacheInstance.set(key,value)
 
-    def get(self,key):
-        return self.cacheInstance.get(key)
+    def get(self,key,default = None):
+        return self.cacheInstance.get(key,default)
 
     def delete(self,key):
         return self.cacheInstance.delete(key)
