@@ -24,7 +24,11 @@ class CacheShelve():
         return True
 
     def get(self, key,default):
-        return self._db.get(key,default)
+        try:
+            val = self._db.get(key,default)
+        except:
+            val = default
+        return val
 
     def __del__(self):
         self._db.close()
